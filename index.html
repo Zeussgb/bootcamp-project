@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+
+  <body>
+
+    <!--CABECERA-->
+    <header>
+      <h1>TaskFlow</h1>
+      <button id="btn-dark-mode" aria-label="Activar modo oscuro">
+        Modo oscuro
+      </button>
+    </header>
+
+    <!--CONTENIDO PRINCIPAL-->
+    <main>
+
+      <!--ZONA IZQUIERDA: formulario + filtros + lista-->
+      <section>
+
+        <h2>Mis tareas</h2>
+
+        <!--Formulario para añadir tareas-->
+        <form id="form-nueva-tarea">
+          <label for="input-tarea">Nueva tarea</label>
+          <input
+            type="text"
+            id="input-tarea"
+            placeholder="Escribe una tarea..."
+          >
+          <button type="submit">Añadir</button>
+        </form>
+
+        <!--Filtros-->
+        <div id="filtros">
+          <button class="filtro activo" data-filtro="todas">Todas</button>
+          <button class="filtro" data-filtro="pendientes">Pendientes</button>
+          <button class="filtro" data-filtro="completadas">Completadas</button>
+        </div>
+
+        <!--Lista de tareas-->
+        <ul id="lista-tareas">
+          <!--Gracias a JavaScript se generarán las tareas aqui-->
+        </ul>
+
+      </section>
+
+      <!--PARTE DERECHA: estadísticas-->
+      <aside>
+        <h2>Estadísticas</h2>
+
+        <div id="stats">
+          <div class="stat">
+            <span class="stat-label">Total</span>
+            <span class="stat-numero" id="stat-total">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Completadas</span>
+            <span class="stat-numero" id="stat-completadas">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Pendientes</span>
+            <span class="stat-numero" id="stat-pendientes">0</span>
+          </div>
+        </div>
+
+        <button id="btn-marcar-todas">Marcar todas</button>
+        <button id="btn-borrar-completadas">Borrar completadas</button>
+
+      </aside>
+
+    </main>
+
+    <!--PIE DE PÁGINA-->
+    <footer>
+      <p>TaskFlow — Bootcamp Project</p>
+    </footer>
+
+    <script src="app.js"></script>
+
+  </body>
+</html>
