@@ -1,0 +1,11 @@
+# Node (Librerías y dependencias que se instalan luego)
+node_modules/
+npm-debug.log
+
+# Sistema Operativo (Archivos basura de Windows o Mac)
+.DS_Store
+Thumbs.db
+
+# Editor (Configuraciones propias de tu VS Code)
+.vscode/
+*.code-workspace
