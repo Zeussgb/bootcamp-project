@@ -5,6 +5,8 @@ let tareas = []
 
 // Variable (genera IDs únicos para cada tarea)
 let nextId = 1
+let filtroActivo = 'todas'
+let textoBusqueda = ''
 
 // Guarda las tareas en LocalStorage
 function guardarEnStorage() {
@@ -39,6 +41,8 @@ const statCompletadas = document.getElementById('stat-completadas')
 const statPendientes = document.getElementById('stat-pendientes')
 const btnMarcarTodas = document.getElementById('btn-marcar-todas')
 const btnBorrarCompletadas = document.getElementById('btn-borrar-completadas')
+const inputBusqueda = document.getElementById('input-busqueda')
+const botonesFiltro = document.querySelectorAll('.filtro')
 
 
 // FUNCIONES PRINCIPALES
@@ -103,26 +107,35 @@ function borrarCompletadas() {
 
 // Esta funcion dibuja todas las tareas en el HTML
 function renderizarTareas() {
-  // Primero vaciamos la lista de esta forma evitamos duplicados
   listaTareas.innerHTML = ''
 
-  // Si no hay tareas mostramos un mensaje
-  if (tareas.length === 0) {
+  // Filtramos según el botón activo
+  let tareasFiltradas = tareas.filter(t => {
+    if (filtroActivo === 'pendientes') return t.completed === false
+    if (filtroActivo === 'completadas') return t.completed === true
+    return true // 'todas'
+  })
+
+  // Filtramos también por el texto de búsqueda
+  if (textoBusqueda !== '') {
+    tareasFiltradas = tareasFiltradas.filter(t =>
+      t.title.toLowerCase().includes(textoBusqueda.toLowerCase())
+    )
+  }
+
+  if (tareasFiltradas.length === 0) {
     listaTareas.innerHTML = '<p id="mensaje-vacio">No hay tareas todavía. ¡Añade una!</p>'
     return
   }
 
-  // Recorremos el array y creamos un elemento HTML por cada tarea
-  tareas.forEach(tarea => {
+  tareasFiltradas.forEach(tarea => {
     const li = document.createElement('li')
     li.classList.add('tarea')
 
-    // Si está completada le añadimos la clase 'completada' que le da un estilo diferente
     if (tarea.completed) {
       li.classList.add('completada')
     }
 
-    // Escribimos el HTML de dentro de cada tarjeta
     li.innerHTML = `
       <input 
         type="checkbox" 
@@ -194,6 +207,24 @@ btnMarcarTodas.addEventListener('click', marcarTodas)
 // Cuando se pulsa "Borrar completadas"
 btnBorrarCompletadas.addEventListener('click', borrarCompletadas)
 
+// Cuando se hace clic en un filtro
+botonesFiltro.forEach(boton => {
+  boton.addEventListener('click', function() {
+    // Quitamos la clase 'activo' de todos los botones
+    botonesFiltro.forEach(b => b.classList.remove('activo'))
+    // Se la ponemos solo al que han pulsado
+    this.classList.add('activo')
+    // Guardamos qué filtro está activo
+    filtroActivo = this.dataset.filtro
+    renderizarTareas()
+  })
+})
+
+// Cuando se escribe en el buscador
+inputBusqueda.addEventListener('input', function() {
+  textoBusqueda = this.value
+  renderizarTareas()
+})
 
 // ARRANQUE
 

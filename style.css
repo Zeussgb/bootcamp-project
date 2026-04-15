@@ -354,3 +354,19 @@ footer {
   }
 
 }
+
+/* BÚSQUEDA */
+#input-busqueda {
+  width: 100%;
+  padding: var(--espaciado-pequeño) var(--espaciado-mediano);
+  font-size: var(--tamanio-fuente-base);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-borde);
+  margin-bottom: var(--espaciado-mediano);
+  outline: none;
+}
+
+#input-busqueda:focus {
+  border-color: var(--color-primario);
+  box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.2);
+}
