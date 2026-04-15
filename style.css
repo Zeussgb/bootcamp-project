@@ -313,3 +313,44 @@ footer {
   border-top: 1px solid var(--color-borde);
   margin-top: var(--espaciado-largo);
 }
+
+/* RESPONSIVE (Para telefonos) */
+@media (max-width: 768px) {
+
+  /* El layout pasa de estar en fila a estar en columna */
+  main {
+    flex-direction: column;
+    padding: var(--espaciado-mediano);
+  }
+
+  /* El aside pasa a tener ancho completo en vez de 220px fijos */
+  aside {
+    width: 100%;
+  }
+
+  /* Las estadísticas se ponen en fila */
+  #stats {
+    flex-direction: row;
+  }
+
+  /* Cada tarjeta de estadística ocupa el mismo espacio */
+  .stat {
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--espaciado-pequeño);
+  }
+
+  /* Los filtros se adaptan si no caben en una fila */
+  #filtros {
+    flex-wrap: wrap;
+  }
+
+  /* Los botones del aside se ponen en fila */
+  #btn-marcar-todas,
+  #btn-borrar-completadas {
+    width: 100%;
+  }
+
+}
