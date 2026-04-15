@@ -6,6 +6,27 @@ let tareas = []
 // Variable (genera IDs únicos para cada tarea)
 let nextId = 1
 
+// Guarda las tareas en LocalStorage
+function guardarEnStorage() {
+  localStorage.setItem('tareas', JSON.stringify(tareas))
+  localStorage.setItem('nextId', nextId)
+}
+
+// Recupera las tareas de LocalStorage
+function cargarDeStorage() {
+  const tareasGuardadas = localStorage.getItem('tareas')
+  const idGuardado = localStorage.getItem('nextId')
+
+  // Si hay datos guardados los cargamos, si no el array se queda vacío
+  if (tareasGuardadas !== null) {
+    tareas = JSON.parse(tareasGuardadas)
+  }
+
+  // Recuperamos también el último id para que no se repitan
+  if (idGuardado !== null) {
+    nextId = parseInt(idGuardado)
+  }
+}
 
 // REFERENCIAS AL HTML
 
@@ -38,6 +59,7 @@ function añadirTarea(titulo) {
   tareas.push(tarea)
   renderizarTareas()
   actualizarEstadisticas()
+  guardarEnStorage() // ← CAMBIO 2
 }
 
 // Marca una tarea como completada o pendiente
@@ -48,6 +70,7 @@ function toggleTarea(id) {
   tarea.completed = !tarea.completed
   renderizarTareas()
   actualizarEstadisticas()
+  guardarEnStorage() // ← CAMBIO 2
 }
 
 // Esta funcion elimina una tarea del array
@@ -56,6 +79,7 @@ function eliminarTarea(id) {
   tareas = tareas.filter(t => t.id !== id)
   renderizarTareas()
   actualizarEstadisticas()
+  guardarEnStorage() // ← CAMBIO 2
 }
 
 // Esta funcion marca todas las tareas como completadas
@@ -63,6 +87,7 @@ function marcarTodas() {
   tareas.forEach(t => t.completed = true)
   renderizarTareas()
   actualizarEstadisticas()
+  guardarEnStorage() // ← CAMBIO 2
 }
 
 // Esta funcion elimina todas las tareas que están completadas
@@ -70,6 +95,7 @@ function borrarCompletadas() {
   tareas = tareas.filter(t => t.completed === false)
   renderizarTareas()
   actualizarEstadisticas()
+  guardarEnStorage() // ← CAMBIO 2
 }
 
 
@@ -137,6 +163,7 @@ function editarTarea(id) {
 
   tarea.title = nuevoTitulo.trim()
   renderizarTareas()
+  guardarEnStorage() // ← CAMBIO 2
 }
 
 
@@ -170,6 +197,6 @@ btnBorrarCompletadas.addEventListener('click', borrarCompletadas)
 
 // ARRANQUE
 
-// Cuando carga la página dibujamos las tareas y las estadísticas
+cargarDeStorage() // ← CAMBIO 3: carga los datos antes de renderizar
 renderizarTareas()
 actualizarEstadisticas()
