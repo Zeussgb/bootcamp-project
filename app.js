@@ -142,7 +142,7 @@ function renderizarTareas() {
       'dark:border-gray-700', 'shadow'
     )
 
-    // Si está completada le añadimos la clase 'completada' que le da un estilo diferente
+    // Si está completada le añadimos opacidad para diferenciarla
     if (tarea.completed) {
       li.classList.add('opacity-60')
     }
@@ -153,11 +153,11 @@ function renderizarTareas() {
         type="checkbox"
         ${tarea.completed ? 'checked' : ''}
         onchange="toggleTarea(${tarea.id})"
-        class="w-4 h-4 cursor-pointer accent-indigo-500"
+        class="w-4 h-4 cursor-pointer accent-indigo-500 flex-shrink-0"
       >
-      <span class="flex-1 text-base text-gray-800 dark:text-gray-100 ${tarea.completed ? 'line-through text-gray-400' : ''}">${tarea.title}</span>
-      <button class="text-gray-400 border border-gray-300 dark:border-gray-600 px-2 py-1 rounded text-xs hover:border-indigo-500 hover:text-indigo-500 transition-colors" onclick="editarTarea(${tarea.id})">Editar</button>
-      <button class="text-red-500 border border-red-400 px-2 py-1 rounded text-xs hover:bg-red-500 hover:text-white transition-colors" onclick="eliminarTarea(${tarea.id})">Borrar</button>
+      <span class="flex-1 text-base text-gray-800 dark:text-gray-100 break-words min-w-0 ${tarea.completed ? 'line-through text-gray-400' : ''}">${tarea.title}</span>
+      <button class="text-gray-400 border border-gray-300 dark:border-gray-600 px-2 py-1 rounded text-xs hover:border-indigo-500 hover:text-indigo-500 transition-colors flex-shrink-0" onclick="editarTarea(${tarea.id})">Editar</button>
+      <button class="text-red-500 border border-red-400 px-2 py-1 rounded text-xs hover:bg-red-500 hover:text-white transition-colors flex-shrink-0" onclick="eliminarTarea(${tarea.id})">Borrar</button>
     `
 
     listaTareas.appendChild(li)
