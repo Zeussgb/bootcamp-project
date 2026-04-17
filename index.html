@@ -4,87 +4,122 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TaskFlow</title>
-    <link rel="stylesheet" href="style.css">
+
+    <!-- Tailwind CSS por CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Configuramos el modo oscuro para que funcione con una clase -->
+    <script>
+      tailwind.config = {
+        darkMode: 'class'
+      }
+    </script>
   </head>
 
-  <body>
+  <body class="bg-gray-100 dark:bg-gray-900 min-h-screen">
 
     <!--CABECERA-->
-    <header>
-      <h1>TaskFlow</h1>
-      <button id="btn-dark-mode" aria-label="Activar modo oscuro">
+    <header class="bg-indigo-500 dark:bg-indigo-900 text-white px-6 py-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold">TaskFlow</h1>
+      <button
+        id="btn-dark-mode"
+        aria-label="Activar modo oscuro"
+        class="border-2 border-white text-white px-4 py-2 rounded-lg text-sm hover:bg-white hover:text-indigo-500 dark:hover:text-indigo-900 transition-colors"
+      >
         Modo oscuro
       </button>
     </header>
 
     <!--CONTENIDO PRINCIPAL-->
-    <main>
+    <main class="flex flex-col md:flex-row gap-6 p-6 max-w-5xl mx-auto">
 
       <!--ZONA IZQUIERDA: formulario + filtros + lista-->
-      <section>
+      <section class="flex-1">
 
-        <h2>Mis tareas</h2>
+        <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Mis tareas</h2>
 
         <!--Formulario para añadir tareas-->
-        <form id="form-nueva-tarea">
-          <label for="input-tarea">Nueva tarea</label>
+        <form id="form-nueva-tarea" class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-4">
+          <label
+            for="input-tarea"
+            class="block font-bold mb-2 text-gray-700 dark:text-gray-200"
+          >
+            Nueva tarea
+          </label>
           <input
             type="text"
             id="input-tarea"
             placeholder="Escribe una tarea..."
+            class="w-full px-4 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg mb-2 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:bg-gray-700 dark:text-white"
           >
-          <button type="submit">Añadir</button>
+          <button
+            type="submit"
+            class="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-2 rounded-lg text-base transition-colors"
+          >
+            Añadir
+          </button>
         </form>
 
         <!-- Búsqueda -->
-        <input 
-          type="text" 
-          id="input-busqueda" 
+        <input
+          type="text"
+          id="input-busqueda"
           placeholder="Buscar tarea..."
-      >
+          class="w-full px-4 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg mb-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:bg-gray-700 dark:text-white"
+        >
 
         <!--Filtros-->
-        <div id="filtros">
-          <button class="filtro activo" data-filtro="todas">Todas</button>
-          <button class="filtro" data-filtro="pendientes">Pendientes</button>
-          <button class="filtro" data-filtro="completadas">Completadas</button>
+        <div id="filtros" class="flex gap-2 mb-4 flex-wrap">
+          <button class="filtro activo px-4 py-2 rounded-lg text-sm border border-gray-300 bg-indigo-500 text-white" data-filtro="todas">Todas</button>
+          <button class="filtro px-4 py-2 rounded-lg text-sm border border-gray-300 bg-white dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 hover:border-indigo-500 hover:text-indigo-500" data-filtro="pendientes">Pendientes</button>
+          <button class="filtro px-4 py-2 rounded-lg text-sm border border-gray-300 bg-white dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 hover:border-indigo-500 hover:text-indigo-500" data-filtro="completadas">Completadas</button>
         </div>
 
         <!--Lista de tareas-->
-        <ul id="lista-tareas">
-          <!--Gracias a JavaScript se generarán las tareas aqui-->
-        </ul>
+        <!--Gracias a JavaScript se generarán las tareas aqui-->
+        <ul id="lista-tareas" class="flex flex-col gap-2"></ul>
 
       </section>
 
       <!--PARTE DERECHA: estadísticas-->
-      <aside>
-        <h2>Estadísticas</h2>
+      <aside class="w-full md:w-56 flex-shrink-0">
 
-        <div id="stats">
-          <div class="stat">
-            <span class="stat-label">Total</span>
-            <span class="stat-numero" id="stat-total">0</span>
+        <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Estadísticas</h2>
+
+        <div id="stats" class="flex flex-col gap-2 mb-4">
+          <div class="stat bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex justify-between items-center shadow">
+            <span class="stat-label text-sm text-gray-500 dark:text-gray-400">Total</span>
+            <span class="stat-numero text-2xl font-bold text-indigo-500" id="stat-total">0</span>
           </div>
-          <div class="stat">
-            <span class="stat-label">Completadas</span>
-            <span class="stat-numero" id="stat-completadas">0</span>
+          <div class="stat bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex justify-between items-center shadow">
+            <span class="stat-label text-sm text-gray-500 dark:text-gray-400">Completadas</span>
+            <span class="stat-numero text-2xl font-bold text-green-500" id="stat-completadas">0</span>
           </div>
-          <div class="stat">
-            <span class="stat-label">Pendientes</span>
-            <span class="stat-numero" id="stat-pendientes">0</span>
+          <div class="stat bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex justify-between items-center shadow">
+            <span class="stat-label text-sm text-gray-500 dark:text-gray-400">Pendientes</span>
+            <span class="stat-numero text-2xl font-bold text-amber-500" id="stat-pendientes">0</span>
           </div>
         </div>
 
-        <button id="btn-marcar-todas">Marcar todas</button>
-        <button id="btn-borrar-completadas">Borrar completadas</button>
+        <button
+          id="btn-marcar-todas"
+          class="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-2 rounded-lg text-sm mb-2 transition-colors"
+        >
+          Marcar todas
+        </button>
+        <button
+          id="btn-borrar-completadas"
+          class="w-full border border-red-500 text-red-500 hover:bg-red-500 hover:text-white py-2 rounded-lg text-sm transition-colors"
+        >
+          Borrar completadas
+        </button>
 
       </aside>
 
     </main>
 
     <!--PIE DE PÁGINA-->
-    <footer>
+    <footer class="text-center py-4 text-sm text-gray-400 border-t border-gray-200 dark:border-gray-700 mt-6">
       <p>Zeus — 2026</p>
     </footer>
 
