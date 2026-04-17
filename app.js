@@ -156,8 +156,16 @@ function renderizarTareas() {
         class="w-4 h-4 cursor-pointer accent-indigo-500 flex-shrink-0"
       >
       <span class="flex-1 text-base text-gray-800 dark:text-gray-100 break-words min-w-0 ${tarea.completed ? 'line-through text-gray-400' : ''}">${tarea.title}</span>
-      <button class="text-gray-400 border border-gray-300 dark:border-gray-600 px-2 py-1 rounded text-xs hover:border-indigo-500 hover:text-indigo-500 transition-colors flex-shrink-0" onclick="editarTarea(${tarea.id})">Editar</button>
-      <button class="text-red-500 border border-red-400 px-2 py-1 rounded text-xs hover:bg-red-500 hover:text-white transition-colors flex-shrink-0" onclick="eliminarTarea(${tarea.id})">Borrar</button>
+      <button
+        class="text-gray-400 border border-gray-300 dark:border-gray-600 px-2 py-1 rounded text-xs hover:border-indigo-500 hover:text-indigo-500 transition-colors flex-shrink-0"
+        onclick="editarTarea(${tarea.id})"
+        aria-label="Editar tarea"
+      >Editar</button>
+      <button
+        class="text-red-500 border border-red-400 px-2 py-1 rounded text-xs hover:bg-red-500 hover:text-white transition-colors flex-shrink-0"
+        onclick="eliminarTarea(${tarea.id})"
+        aria-label="Eliminar tarea"
+      >Borrar</button>
     `
 
     listaTareas.appendChild(li)
