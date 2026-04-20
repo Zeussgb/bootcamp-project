@@ -64,3 +64,27 @@ un concepto que desconocía y que amplió mi comprensión.
 Ambos asistentes detectaron los mismos bugs correctamente. Claude 
 fue más directo y fácil de seguir para mi nivel. ChatGPT me dio 
 detalles extra interesantes pero con explicacion de la necesaria.
+
+## Generación de código
+
+Le pedí a los dos que implementaran tres funciones JavaScript 
+descritas en lenguaje normal, sin código.
+
+Los dos generaron código que funcionaba, pero hubo algo importante:
+Claude usó `t.title` que es como se llama el campo en mi proyecto 
+TaskFlow, mientras que ChatGPT usó `tarea.titulo` que no funcionaría 
+directamente en mi proyecto sin cambiarlo.
+
+### Diferencias que noté
+- ChatGPT copió el array usando `[...tareas]`, que me resultó más 
+  fácil de leer que el `tareas.slice()` que usó Claude.
+- Claude convirtió el texto a minúsculas directamente dentro del 
+  filter, me pareció más limpio que guardarlo en una variable aparte 
+  como hizo ChatGPT.
+- Al final ChatGPT ofreció adaptar el código a TypeScript o añadir 
+  validaciones, algo que no necesito para nada ahora mismo.
+
+### Conclusión
+Los dos funcionan, pero Claude se adaptó mejor a mi proyecto porque 
+usó los nombres reales de mis variables. El código de ChatGPT era 
+más genérico y habría necesitado ajustes para funcionar en TaskFlow.
