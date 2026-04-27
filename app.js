@@ -54,6 +54,7 @@ function cargarDeStorage() {
 const form = document.getElementById('form-nueva-tarea')
 const inputTarea = document.getElementById('input-tarea')
 const inputBusqueda = document.getElementById('input-busqueda')
+const inputFecha = document.getElementById('input-fecha')
 const selectPrioridad = document.getElementById('select-prioridad')
 const listaTareas = document.getElementById('lista-tareas')
 const statTotal = document.getElementById('stat-total')
@@ -71,15 +72,17 @@ const btnDarkMode = document.getElementById('btn-dark-mode')
  * Crea y devuelve un objeto tarea nuevo
  * @param {string} titulo - El texto de la tarea
  * @param {string} prioridad - La prioridad: 'alta', 'media' o 'baja'
+ * @param {string} fecha - La fecha límite (opcional)
  * @returns {Object} El objeto tarea creado
  */
-function crearTarea(titulo, prioridad) {
+function crearTarea(titulo, prioridad, fecha) {
   return {
     id: nextId++,
     title: titulo,
     completed: false,
     createdAt: new Date().toLocaleDateString('es-ES'),
-    priority: prioridad
+    priority: prioridad,
+    deadline: fecha || null // Si no hay fecha guardamos null
   }
 }
 
@@ -87,9 +90,10 @@ function crearTarea(titulo, prioridad) {
  * Añade una tarea nueva al array y actualiza la pantalla
  * @param {string} titulo - El texto de la tarea
  * @param {string} prioridad - La prioridad: 'alta', 'media' o 'baja'
+ * @param {string} fecha - La fecha límite (opcional)
  */
-function añadirTarea(titulo, prioridad) {
-  const tarea = crearTarea(titulo, prioridad)
+function añadirTarea(titulo, prioridad, fecha) {
+  const tarea = crearTarea(titulo, prioridad, fecha)
   tareas.push(tarea)
   renderizarTareas()
   actualizarEstadisticas()
@@ -178,6 +182,33 @@ function obtenerTareasFiltradas() {
 }
 
 /**
+ * Formatea una fecha del formato YYYY-MM-DD al formato DD/MM/YYYY
+ * y comprueba si la tarea está vencida o es para hoy
+ * @param {string} fecha - La fecha en formato YYYY-MM-DD
+ * @returns {Object} Objeto con el texto formateado y la clase de color
+ */
+function formatearFecha(fecha) {
+  const hoy = new Date()
+  hoy.setHours(0, 0, 0, 0)
+  const fechaLimite = new Date(fecha + 'T00:00:00')
+
+  // Convertimos al formato DD/MM/YYYY para mostrar
+  const partes = fecha.split('-')
+  const fechaFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`
+
+  if (fechaLimite < hoy) {
+    // La fecha ya pasó → rojo
+    return { texto: `⚠️ ${fechaFormateada}`, clase: 'text-red-500 dark:text-red-400' }
+  } else if (fechaLimite.getTime() === hoy.getTime()) {
+    // Es hoy → naranja
+    return { texto: `🔔 Hoy`, clase: 'text-amber-500 dark:text-amber-400' }
+  } else {
+    // Fecha futura → gris normal
+    return { texto: `📅 ${fechaFormateada}`, clase: 'text-gray-400 dark:text-gray-500' }
+  }
+}
+
+/**
  * Dibuja todas las tareas filtradas en el HTML
  * Vacía la lista primero para evitar duplicados
  */
@@ -216,6 +247,14 @@ function renderizarTareas() {
     // Cogemos la configuración de color del badge según la prioridad
     const prioridad = PRIORIDAD_CONFIG[tarea.priority] || PRIORIDAD_CONFIG.media
 
+    // Preparamos el HTML de la fecha límite si existe
+    const fechaHTML = tarea.deadline
+      ? (() => {
+          const { texto, clase } = formatearFecha(tarea.deadline)
+          return `<span class="text-xs ${clase} flex-shrink-0">${texto}</span>`
+        })()
+      : ''
+
     // Escribimos el HTML de dentro de cada tarjeta
     li.innerHTML = `
       <span class="text-gray-300 dark:text-gray-600 cursor-grab select-none text-lg flex-shrink-0" title="Arrastra para reordenar">⠿</span>
@@ -226,6 +265,7 @@ function renderizarTareas() {
         class="w-4 h-4 cursor-pointer accent-indigo-500 flex-shrink-0"
       >
       <span class="flex-1 text-base text-gray-800 dark:text-gray-100 break-words min-w-0 ${tarea.completed ? 'line-through text-gray-400' : ''}">${tarea.title}</span>
+      ${fechaHTML}
       <span class="text-xs px-2 py-1 rounded-full flex-shrink-0 ${prioridad.clase}">${prioridad.texto}</span>
       <button
         class="text-gray-400 border border-gray-300 dark:border-gray-600 px-2 py-1 rounded text-xs hover:border-indigo-500 hover:text-indigo-500 transition-colors flex-shrink-0"
@@ -355,6 +395,7 @@ form.addEventListener('submit', function(e) {
 
   const titulo = inputTarea.value.trim()
   const prioridad = selectPrioridad.value
+  const fecha = inputFecha.value // Puede estar vacío si no se seleccionó fecha
 
   if (titulo === '') {
     alert('Por favor escribe una tarea')
@@ -371,11 +412,12 @@ form.addEventListener('submit', function(e) {
     return
   }
 
-  añadirTarea(titulo, prioridad)
+  añadirTarea(titulo, prioridad, fecha)
 
-  // Limpiamos el input después de añadir y reseteamos la prioridad a media
+  // Limpiamos el formulario después de añadir
   inputTarea.value = ''
   selectPrioridad.value = 'media'
+  inputFecha.value = ''
 })
 
 // Cuando se hace clic en un filtro
