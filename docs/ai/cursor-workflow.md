@@ -50,3 +50,33 @@ gustado es el autocompletado, porque con solo escribir un comentario
 describiendo lo que quieres, ya te genera el código. También el 
 Composer es muy potente porque puede editar varios archivos a la 
 vez, pero siempre pidiendo confirmación antes de aplicar los cambios.
+
+
+## Servidor MCP: filesystem
+
+### Instalación
+Para configurar el servidor MCP de filesystem en Cursor hay que:
+1. Instalar Node.js desde nodejs.org
+2. Abrir Cursor Settings → Tools & MCPs → Add Custom MCP
+3. Pegar la configuración en el archivo mcp.json con la ruta del proyecto
+4. Reiniciar Cursor para que reconozca Node.js
+
+### Consultas realizadas
+Se realizaron 5 consultas usando el servidor MCP en modo Agent:
+
+1. Listar todos los archivos del proyecto → los listó correctamente todos
+2. Contar funciones en app.js → detectó 13 funciones con nombre y 17 en total
+3. Revisar accesibilidad en index.html → encontró 4 problemas reales como 
+   falta de label en el buscador o aria-pressed en los filtros
+4. Buscar dónde se usa localStorage → localizó exactamente las 6 líneas de app.js
+5. Revisar si el README tiene secciones importantes → sugirió añadir licencia, 
+   limitaciones conocidas y actualizar la estructura del proyecto
+
+### Conclusión
+Lo más útil fue que la IA pudo leer los archivos directamente sin necesidad 
+de pegarlos en el chat. La consulta más útil fue la de accesibilidad, porque 
+encontró errores reales que no había detectado antes.
+
+Para un proyecto pequeño como este la diferencia con el chat normal no es muy 
+grande, pero MCP tiene más sentido en proyectos grandes donde se conecta a 
+bases de datos, APIs externas o servicios como GitHub o Slack.
