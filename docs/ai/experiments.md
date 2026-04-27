@@ -32,4 +32,4 @@ especiales como que el array esté vacío, y lo entiendo cuando lo leo.
 | Comprensión | Entiendo la lógica pero no sé escribirla | Entiendo el código al leerlo |
 
 ### Conclusión
-En este paso la IA es imprescindible para mi, debido a que no consigo escribir codigo 'bien',pero lo importante es que cuando lo leo lo entiendo. Eso significa que voy aprendiendo aunque no pueda escribirlo solo todavía.
+En este paso la IA es imprescindible para mi, debido a que no consigo escribir codigo 'bien',pero lo importante es que cuando lo leo lo entiendo. Eso significa que voy aprendiendo aunque no pueda escribirlo solo todavía
