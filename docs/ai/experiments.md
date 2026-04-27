@@ -33,3 +33,25 @@ especiales como que el array esté vacío, y lo entiendo cuando lo leo.
 
 ### Conclusión
 En este paso la IA es imprescindible para mi, debido a que no consigo escribir codigo 'bien',pero lo importante es que cuando lo leo lo entiendo. Eso significa que voy aprendiendo aunque no pueda escribirlo solo todavía
+
+## Experimento 2: Cursor vs GitHub Copilot
+
+### Pruebas realizadas
+
+**Autocompletado**
+Los dos generaron código con solo escribir un comentario describiendo 
+la función. Sin embargo Copilot usó `tarea.fechaCreacion` en vez de 
+`tarea.createdAt`, que es como se llama el campo en mi proyecto real. 
+Cursor se adaptó mejor al contexto del proyecto.
+
+**Chat**
+Le pregunté a los dos que me explicaran qué hace `renderizarTareas`. 
+Los dos dieron una explicación detallada y correcta. Copilot leyó el 
+archivo directamente sin que se lo pidiera.
+
+### Conclusión
+Los dos son muy parecidos en funcionalidad. Me he quedado con Copilot 
+porque me ha resultado más cómodo al estar integrado en VS Code, que 
+es el editor que ya conocía. Cursor tiene la ventaja del MCP para 
+conectarse a servicios externos, pero para el día a día Copilot me 
+parece más intuitivo.
