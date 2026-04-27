@@ -20,13 +20,18 @@ const PRIORIDAD_CONFIG = {
   baja:  { texto: '🟢 Baja',  clase: 'bg-green-100 text-green-700 border border-green-300 dark:bg-green-900 dark:text-green-300' }
 }
 
-// Guarda las tareas en LocalStorage
+/**
+ * Guarda las tareas y el nextId en LocalStorage
+ */
 function guardarEnStorage() {
   localStorage.setItem('tareas', JSON.stringify(tareas))
   localStorage.setItem('nextId', nextId)
 }
 
-// Recupera las tareas de LocalStorage
+/**
+ * Carga las tareas y el nextId desde LocalStorage
+ * Si no hay datos guardados el array se queda vacío
+ */
 function cargarDeStorage() {
   const tareasGuardadas = localStorage.getItem('tareas')
   const idGuardado = localStorage.getItem('nextId')
@@ -62,7 +67,12 @@ const btnDarkMode = document.getElementById('btn-dark-mode')
 
 // FUNCIONES PRINCIPALES
 
-// Crea un objeto tarea nuevo (ahora incluye prioridad)
+/**
+ * Crea y devuelve un objeto tarea nuevo
+ * @param {string} titulo - El texto de la tarea
+ * @param {string} prioridad - La prioridad: 'alta', 'media' o 'baja'
+ * @returns {Object} El objeto tarea creado
+ */
 function crearTarea(titulo, prioridad) {
   return {
     id: nextId++,
@@ -73,7 +83,11 @@ function crearTarea(titulo, prioridad) {
   }
 }
 
-// Añade una tarea al array y actualiza la pantalla
+/**
+ * Añade una tarea nueva al array y actualiza la pantalla
+ * @param {string} titulo - El texto de la tarea
+ * @param {string} prioridad - La prioridad: 'alta', 'media' o 'baja'
+ */
 function añadirTarea(titulo, prioridad) {
   const tarea = crearTarea(titulo, prioridad)
   tareas.push(tarea)
@@ -82,37 +96,47 @@ function añadirTarea(titulo, prioridad) {
   guardarEnStorage()
 }
 
-// Marca una tarea como completada o pendiente
+/**
+ * Cambia el estado de una tarea entre completada y pendiente
+ * @param {number} id - El id de la tarea a cambiar
+ */
 function toggleTarea(id) {
-  // Buscamos la tarea que tiene ese id
   const tarea = tareas.find(t => t.id === id)
-  // Le cambiamos el estado: si era true pasa a false y si era false pasa a true
+  // Si la tarea no existe no hacemos nada
+  if (!tarea) return
   tarea.completed = !tarea.completed
   renderizarTareas()
   actualizarEstadisticas()
   guardarEnStorage()
 }
 
-// Esta funcion elimina una tarea del array con animación de salida
+/**
+ * Elimina una tarea del array con animación de salida
+ * Si el elemento no está en el DOM lo borra directamente del array
+ * @param {number} id - El id de la tarea a eliminar
+ */
 function eliminarTarea(id) {
-  // Buscamos el elemento en el DOM por su data-id
   const elemento = document.querySelector(`[data-id="${id}"]`)
 
   if (elemento) {
-    // Le añadimos la clase de animación de salida
     elemento.classList.add('tarea-exit')
-
-    // Esperamos 300ms (lo que dura la animación) y luego borramos de verdad
     setTimeout(() => {
       tareas = tareas.filter(t => t.id !== id)
       renderizarTareas()
       actualizarEstadisticas()
       guardarEnStorage()
     }, 300)
+  } else {
+    // Si el elemento no está en el DOM lo borramos directamente del array
+    tareas = tareas.filter(t => t.id !== id)
+    actualizarEstadisticas()
+    guardarEnStorage()
   }
 }
 
-// Esta funcion marca todas las tareas como completadas
+/**
+ * Marca todas las tareas como completadas
+ */
 function marcarTodas() {
   tareas.forEach(t => t.completed = true)
   renderizarTareas()
@@ -120,7 +144,9 @@ function marcarTodas() {
   guardarEnStorage()
 }
 
-// Esta funcion elimina todas las tareas que están completadas
+/**
+ * Elimina todas las tareas que están completadas
+ */
 function borrarCompletadas() {
   tareas = tareas.filter(t => t.completed === false)
   renderizarTareas()
@@ -131,24 +157,36 @@ function borrarCompletadas() {
 
 // RENDERIZAR (pintar las tareas en el HTML)
 
-// Esta funcion dibuja todas las tareas en el HTML
-function renderizarTareas() {
-  // Primero vaciamos la lista de esta forma evitamos duplicados
-  listaTareas.innerHTML = ''
-
-  // Filtramos según el botón activo
+/**
+ * Devuelve las tareas filtradas según el filtro activo y el texto de búsqueda
+ * @returns {Array} Array de tareas filtradas
+ */
+function obtenerTareasFiltradas() {
   let tareasFiltradas = tareas.filter(t => {
     if (filtroActivo === 'pendientes') return t.completed === false
     if (filtroActivo === 'completadas') return t.completed === true
     return true // 'todas'
   })
 
-  // Filtramos también por el texto de búsqueda
   if (textoBusqueda !== '') {
     tareasFiltradas = tareasFiltradas.filter(t =>
       t.title.toLowerCase().includes(textoBusqueda.toLowerCase())
     )
   }
+
+  return tareasFiltradas
+}
+
+/**
+ * Dibuja todas las tareas filtradas en el HTML
+ * Vacía la lista primero para evitar duplicados
+ */
+function renderizarTareas() {
+  // Primero vaciamos la lista de esta forma evitamos duplicados
+  listaTareas.innerHTML = ''
+
+  // Usamos la función separada en vez de hacer el filtrado aquí
+  const tareasFiltradas = obtenerTareasFiltradas()
 
   // Si no hay tareas mostramos un mensaje
   if (tareasFiltradas.length === 0) {
@@ -250,7 +288,9 @@ function renderizarTareas() {
   })
 }
 
-// Actualiza los números de las estadísticas
+/**
+ * Actualiza los contadores de estadísticas en el panel lateral
+ */
 function actualizarEstadisticas() {
   const total = tareas.length
   const completadas = tareas.filter(t => t.completed === true).length
@@ -264,15 +304,16 @@ function actualizarEstadisticas() {
 
 // EDITAR TAREA
 
+/**
+ * Permite editar el título de una tarea existente mediante un prompt
+ * @param {number} id - El id de la tarea a editar
+ */
 function editarTarea(id) {
   const tarea = tareas.find(t => t.id === id)
-
-  // Pedimos al usuario un nuevo título con el actual como valor por defecto
+  // Si la tarea no existe no hacemos nada
+  if (!tarea) return
   const nuevoTitulo = prompt('Edita el título de la tarea:', tarea.title)
-
-  // Si el usuario canceló o dejó el campo vacío no hacemos nada
   if (nuevoTitulo === null || nuevoTitulo.trim() === '') return
-
   tarea.title = nuevoTitulo.trim()
   renderizarTareas()
   guardarEnStorage()
@@ -281,6 +322,10 @@ function editarTarea(id) {
 
 // MODO OSCURO
 
+/**
+ * Activa o desactiva el modo oscuro y guarda la preferencia en LocalStorage
+ * @param {boolean} activar - true para activar el modo oscuro, false para desactivarlo
+ */
 function aplicarModoOscuro(activar) {
   if (activar) {
     document.documentElement.classList.add('dark')
@@ -311,9 +356,18 @@ form.addEventListener('submit', function(e) {
   const titulo = inputTarea.value.trim()
   const prioridad = selectPrioridad.value
 
-  // Si el input está vacío no hacemos nada
   if (titulo === '') {
     alert('Por favor escribe una tarea')
+    return
+  }
+
+  if (titulo.length < 3) {
+    alert('El título debe tener al menos 3 caracteres')
+    return
+  }
+
+  if (titulo.length > 100) {
+    alert('El título no puede tener más de 100 caracteres')
     return
   }
 
