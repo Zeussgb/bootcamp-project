@@ -9,3 +9,6 @@ Thumbs.db
 # Editor (Configuraciones propias de tu VS Code)
 .vscode/
 *.code-workspace
+
+# Variables de entorno (nunca subir al repositorio)
+.env
