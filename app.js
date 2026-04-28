@@ -1,16 +1,13 @@
 // DATOS
 
-// Array (guardamos todas las tareas)
+// Array donde guardamos las tareas (ahora vienen del servidor)
 let tareas = []
-
-// Variable (genera IDs únicos para cada tarea)
-let nextId = 1
 
 // Variables para el filtro y la búsqueda
 let filtroActivo = 'todas'
 let textoBusqueda = ''
 
-// Variable para el drag & drop (guarda el id de la tarea que se está arrastrando)
+// Variable para el drag & drop
 let dragId = null
 
 // Configuración de colores y textos para cada prioridad
@@ -20,37 +17,9 @@ const PRIORIDAD_CONFIG = {
   baja:  { texto: '🟢 Baja',  clase: 'bg-green-100 text-green-700 border border-green-300 dark:bg-green-900 dark:text-green-300' }
 }
 
-/**
- * Guarda las tareas y el nextId en LocalStorage
- */
-function guardarEnStorage() {
-  localStorage.setItem('tareas', JSON.stringify(tareas))
-  localStorage.setItem('nextId', nextId)
-}
-
-/**
- * Carga las tareas y el nextId desde LocalStorage
- * Si no hay datos guardados el array se queda vacío
- */
-function cargarDeStorage() {
-  const tareasGuardadas = localStorage.getItem('tareas')
-  const idGuardado = localStorage.getItem('nextId')
-
-  // Si hay datos guardados los cargamos, si no el array se queda vacío
-  if (tareasGuardadas !== null) {
-    tareas = JSON.parse(tareasGuardadas)
-  }
-
-  // Recuperamos también el último id para que no se repitan
-  if (idGuardado !== null) {
-    nextId = parseInt(idGuardado)
-  }
-}
-
 
 // REFERENCIAS AL HTML
 
-// Cogemos elementos del HTML y los ponemos como variables para usarlos aqui
 const form = document.getElementById('form-nueva-tarea')
 const inputTarea = document.getElementById('input-tarea')
 const inputBusqueda = document.getElementById('input-busqueda')
@@ -66,96 +35,129 @@ const botonesFiltro = document.querySelectorAll('.filtro')
 const btnDarkMode = document.getElementById('btn-dark-mode')
 
 
+// ESTADOS DE LA UI
+
+/**
+ * Muestra un mensaje de carga mientras esperamos al servidor
+ */
+function mostrarCargando() {
+  listaTareas.innerHTML = '<p class="text-gray-400 text-sm mt-2 animate-pulse">Cargando tareas...</p>'
+}
+
+/**
+ * Muestra un mensaje de error si el servidor no responde
+ * @param {string} mensaje - El mensaje de error a mostrar
+ */
+function mostrarError(mensaje) {
+  listaTareas.innerHTML = `<p class="text-red-400 text-sm mt-2">❌ ${mensaje}</p>`
+}
+
+
 // FUNCIONES PRINCIPALES
 
 /**
- * Crea y devuelve un objeto tarea nuevo
- * @param {string} titulo - El texto de la tarea
- * @param {string} prioridad - La prioridad: 'alta', 'media' o 'baja'
- * @param {string} fecha - La fecha límite (opcional)
- * @returns {Object} El objeto tarea creado
+ * Carga todas las tareas desde el servidor y las muestra en pantalla
  */
-function crearTarea(titulo, prioridad, fecha) {
-  return {
-    id: nextId++,
-    title: titulo,
-    completed: false,
-    createdAt: new Date().toLocaleDateString('es-ES'),
-    priority: prioridad,
-    deadline: fecha || null // Si no hay fecha guardamos null
+async function cargarTareas() {
+  mostrarCargando()
+  try {
+    tareas = await getTasks()
+    renderizarTareas()
+    actualizarEstadisticas()
+  } catch (error) {
+    mostrarError('No se pudo conectar con el servidor. ¿Está corriendo?')
   }
 }
 
 /**
- * Añade una tarea nueva al array y actualiza la pantalla
+ * Añade una tarea nueva enviándola al servidor
  * @param {string} titulo - El texto de la tarea
  * @param {string} prioridad - La prioridad: 'alta', 'media' o 'baja'
  * @param {string} fecha - La fecha límite (opcional)
  */
-function añadirTarea(titulo, prioridad, fecha) {
-  const tarea = crearTarea(titulo, prioridad, fecha)
-  tareas.push(tarea)
-  renderizarTareas()
-  actualizarEstadisticas()
-  guardarEnStorage()
+async function añadirTarea(titulo, prioridad, fecha) {
+  try {
+    const tarea = await createTask({ title: titulo, priority: prioridad, deadline: fecha || null })
+    tareas.push(tarea)
+    renderizarTareas()
+    actualizarEstadisticas()
+  } catch (error) {
+    alert('Error al añadir la tarea: ' + error.message)
+  }
 }
 
 /**
  * Cambia el estado de una tarea entre completada y pendiente
  * @param {number} id - El id de la tarea a cambiar
  */
-function toggleTarea(id) {
+async function toggleTarea(id) {
   const tarea = tareas.find(t => t.id === id)
-  // Si la tarea no existe no hacemos nada
   if (!tarea) return
-  tarea.completed = !tarea.completed
-  renderizarTareas()
-  actualizarEstadisticas()
-  guardarEnStorage()
+  try {
+    const tareaActualizada = await updateTask(id, { completed: !tarea.completed })
+    tarea.completed = tareaActualizada.completed
+    renderizarTareas()
+    actualizarEstadisticas()
+  } catch (error) {
+    alert('Error al actualizar la tarea: ' + error.message)
+  }
 }
 
 /**
- * Elimina una tarea del array con animación de salida
- * Si el elemento no está en el DOM lo borra directamente del array
+ * Elimina una tarea del servidor con animación de salida
  * @param {number} id - El id de la tarea a eliminar
  */
-function eliminarTarea(id) {
+async function eliminarTarea(id) {
   const elemento = document.querySelector(`[data-id="${id}"]`)
 
   if (elemento) {
     elemento.classList.add('tarea-exit')
-    setTimeout(() => {
-      tareas = tareas.filter(t => t.id !== id)
-      renderizarTareas()
-      actualizarEstadisticas()
-      guardarEnStorage()
+    setTimeout(async () => {
+      try {
+        await deleteTask(id)
+        tareas = tareas.filter(t => t.id !== id)
+        renderizarTareas()
+        actualizarEstadisticas()
+      } catch (error) {
+        alert('Error al eliminar la tarea: ' + error.message)
+        renderizarTareas() // Volvemos a mostrar la tarea si falló
+      }
     }, 300)
-  } else {
-    // Si el elemento no está en el DOM lo borramos directamente del array
-    tareas = tareas.filter(t => t.id !== id)
-    actualizarEstadisticas()
-    guardarEnStorage()
   }
 }
 
 /**
  * Marca todas las tareas como completadas
  */
-function marcarTodas() {
-  tareas.forEach(t => t.completed = true)
-  renderizarTareas()
-  actualizarEstadisticas()
-  guardarEnStorage()
+async function marcarTodas() {
+  try {
+    // Actualizamos todas las tareas pendientes en el servidor
+    const promesas = tareas
+      .filter(t => !t.completed)
+      .map(t => updateTask(t.id, { completed: true }))
+    await Promise.all(promesas)
+    // Recargamos las tareas del servidor
+    await cargarTareas()
+  } catch (error) {
+    alert('Error al marcar las tareas: ' + error.message)
+  }
 }
 
 /**
- * Elimina todas las tareas que están completadas
+ * Elimina todas las tareas completadas del servidor
  */
-function borrarCompletadas() {
-  tareas = tareas.filter(t => t.completed === false)
-  renderizarTareas()
-  actualizarEstadisticas()
-  guardarEnStorage()
+async function borrarCompletadas() {
+  try {
+    // Borramos todas las tareas completadas en el servidor
+    const promesas = tareas
+      .filter(t => t.completed)
+      .map(t => deleteTask(t.id))
+    await Promise.all(promesas)
+    // Recargamos las tareas del servidor
+    await cargarTareas()
+  } catch (error) {
+    alert('Error al borrar las tareas: ' + error.message)
+  }
 }
 
 
@@ -192,18 +194,14 @@ function formatearFecha(fecha) {
   hoy.setHours(0, 0, 0, 0)
   const fechaLimite = new Date(fecha + 'T00:00:00')
 
-  // Convertimos al formato DD/MM/YYYY para mostrar
   const partes = fecha.split('-')
   const fechaFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`
 
   if (fechaLimite < hoy) {
-    // La fecha ya pasó → rojo
     return { texto: `⚠️ ${fechaFormateada}`, clase: 'text-red-500 dark:text-red-400' }
   } else if (fechaLimite.getTime() === hoy.getTime()) {
-    // Es hoy → naranja
     return { texto: `🔔 Hoy`, clase: 'text-amber-500 dark:text-amber-400' }
   } else {
-    // Fecha futura → gris normal
     return { texto: `📅 ${fechaFormateada}`, clase: 'text-gray-400 dark:text-gray-500' }
   }
 }
@@ -213,41 +211,32 @@ function formatearFecha(fecha) {
  * Vacía la lista primero para evitar duplicados
  */
 function renderizarTareas() {
-  // Primero vaciamos la lista de esta forma evitamos duplicados
   listaTareas.innerHTML = ''
 
-  // Usamos la función separada en vez de hacer el filtrado aquí
   const tareasFiltradas = obtenerTareasFiltradas()
 
-  // Si no hay tareas mostramos un mensaje
   if (tareasFiltradas.length === 0) {
     listaTareas.innerHTML = '<p id="mensaje-vacio" class="text-gray-400 text-sm mt-2">No hay tareas todavía. ¡Añade una!</p>'
     return
   }
 
-  // Recorremos el array y creamos un elemento HTML por cada tarea
   tareasFiltradas.forEach(tarea => {
     const li = document.createElement('li')
-
-    // Guardamos el id en el elemento para poder encontrarlo luego (para la animación de borrado)
     li.dataset.id = tarea.id
 
     li.classList.add(
-      'tarea-enter',     // animación de entrada
+      'tarea-enter',
       'flex', 'items-center', 'gap-3', 'bg-white', 'dark:bg-gray-800',
       'px-4', 'py-3', 'rounded-lg', 'border', 'border-gray-200',
       'dark:border-gray-700', 'shadow', 'cursor-grab'
     )
 
-    // Si está completada le añadimos opacidad para diferenciarla
     if (tarea.completed) {
       li.classList.add('opacity-60')
     }
 
-    // Cogemos la configuración de color del badge según la prioridad
     const prioridad = PRIORIDAD_CONFIG[tarea.priority] || PRIORIDAD_CONFIG.media
 
-    // Preparamos el HTML de la fecha límite si existe
     const fechaHTML = tarea.deadline
       ? (() => {
           const { texto, clase } = formatearFecha(tarea.deadline)
@@ -255,7 +244,6 @@ function renderizarTareas() {
         })()
       : ''
 
-    // Escribimos el HTML de dentro de cada tarjeta
     li.innerHTML = `
       <span class="text-gray-300 dark:text-gray-600 cursor-grab select-none text-lg flex-shrink-0" title="Arrastra para reordenar">⠿</span>
       <input
@@ -279,48 +267,38 @@ function renderizarTareas() {
       >Borrar</button>
     `
 
-    // DRAG & DROP: eventos de arrastrar
+    // DRAG & DROP
     li.setAttribute('draggable', 'true')
 
-    // Cuando empieza a arrastrarse esta tarea
     li.addEventListener('dragstart', () => {
       dragId = tarea.id
       li.classList.add('opacity-50')
     })
 
-    // Cuando se suelta el ratón (termine de arrastrar)
     li.addEventListener('dragend', () => {
       dragId = null
       li.classList.remove('opacity-50')
     })
 
-    // Cuando otra tarea está siendo arrastrada encima de esta
     li.addEventListener('dragover', (e) => {
-      e.preventDefault() // necesario para que funcione el drop
+      e.preventDefault()
       li.classList.add('drag-over')
     })
 
-    // Cuando la tarea arrastrada sale de encima de esta
     li.addEventListener('dragleave', () => {
       li.classList.remove('drag-over')
     })
 
-    // Cuando soltamos la tarea arrastrada encima de esta
     li.addEventListener('drop', () => {
       li.classList.remove('drag-over')
-
-      // Si es la misma tarea no hacemos nada
       if (dragId === null || dragId === tarea.id) return
 
-      // Buscamos las posiciones de ambas tareas en el array original
       const fromIndex = tareas.findIndex(t => t.id === dragId)
       const toIndex = tareas.findIndex(t => t.id === tarea.id)
 
-      // Sacamos la tarea arrastrada de su posición y la insertamos en la nueva
       const tareaArrastrada = tareas.splice(fromIndex, 1)[0]
       tareas.splice(toIndex, 0, tareaArrastrada)
 
-      guardarEnStorage()
       renderizarTareas()
     })
 
@@ -348,19 +326,26 @@ function actualizarEstadisticas() {
  * Permite editar el título de una tarea existente mediante un prompt
  * @param {number} id - El id de la tarea a editar
  */
-function editarTarea(id) {
+async function editarTarea(id) {
   const tarea = tareas.find(t => t.id === id)
-  // Si la tarea no existe no hacemos nada
   if (!tarea) return
+
   const nuevoTitulo = prompt('Edita el título de la tarea:', tarea.title)
   if (nuevoTitulo === null || nuevoTitulo.trim() === '') return
-  tarea.title = nuevoTitulo.trim()
-  renderizarTareas()
-  guardarEnStorage()
+
+  try {
+    const tareaActualizada = await updateTask(id, { title: nuevoTitulo.trim() })
+    tarea.title = tareaActualizada.title
+    renderizarTareas()
+  } catch (error) {
+    alert('Error al editar la tarea: ' + error.message)
+  }
 }
 
 
 // MODO OSCURO
+// El modo oscuro sigue usando LocalStorage porque es una preferencia
+// visual del usuario, no datos de la aplicación
 
 /**
  * Activa o desactiva el modo oscuro y guarda la preferencia en LocalStorage
@@ -374,14 +359,11 @@ function aplicarModoOscuro(activar) {
     document.documentElement.classList.remove('dark')
     btnDarkMode.textContent = 'Modo oscuro'
   }
-  // Guardamos la preferencia en LocalStorage
   localStorage.setItem('modoOscuro', activar)
 }
 
 btnDarkMode.addEventListener('click', function() {
-  // Comprobamos si el modo oscuro está activo ahora mismo
   const estaActivo = document.documentElement.classList.contains('dark')
-  // Lo cambiamos al contrario
   aplicarModoOscuro(!estaActivo)
 })
 
@@ -389,13 +371,12 @@ btnDarkMode.addEventListener('click', function() {
 // EVENTOS
 
 // Cuando se envía el formulario
-form.addEventListener('submit', function(e) {
-  // Evitamos que la página se recargue (comportamiento por defecto del form)
+form.addEventListener('submit', async function(e) {
   e.preventDefault()
 
   const titulo = inputTarea.value.trim()
   const prioridad = selectPrioridad.value
-  const fecha = inputFecha.value // Puede estar vacío si no se seleccionó fecha
+  const fecha = inputFecha.value
 
   if (titulo === '') {
     alert('Por favor escribe una tarea')
@@ -412,9 +393,8 @@ form.addEventListener('submit', function(e) {
     return
   }
 
-  añadirTarea(titulo, prioridad, fecha)
+  await añadirTarea(titulo, prioridad, fecha)
 
-  // Limpiamos el formulario después de añadir
   inputTarea.value = ''
   selectPrioridad.value = 'media'
   inputFecha.value = ''
@@ -423,11 +403,8 @@ form.addEventListener('submit', function(e) {
 // Cuando se hace clic en un filtro
 botonesFiltro.forEach(boton => {
   boton.addEventListener('click', function() {
-    // Quitamos la clase 'activo' de todos los botones
     botonesFiltro.forEach(b => b.classList.remove('activo', 'bg-indigo-500', 'text-white'))
-    // Se la ponemos solo al que han pulsado
     this.classList.add('activo', 'bg-indigo-500', 'text-white')
-    // Guardamos qué filtro está activo
     filtroActivo = this.dataset.filtro
     renderizarTareas()
   })
@@ -450,6 +427,4 @@ btnBorrarCompletadas.addEventListener('click', borrarCompletadas)
 
 const modoOscuroGuardado = localStorage.getItem('modoOscuro') === 'true'
 aplicarModoOscuro(modoOscuroGuardado)
-cargarDeStorage()
-renderizarTareas()
-actualizarEstadisticas()
+cargarTareas() // Cargamos las tareas desde el servidor
